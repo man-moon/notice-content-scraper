@@ -1,18 +1,26 @@
 package com.ajouin.noticecontentscraper.pipeline.processor
 
-import com.ajouin.noticecontentscraper.config.EventQueuesProperties
 import com.ajouin.noticecontentscraper.dto.ContentRequest
 import com.ajouin.noticecontentscraper.dto.ParsingResponse
 import com.ajouin.noticecontentscraper.entity.NoticeType
-import com.ajouin.noticecontentscraper.global.exception.EntityNotFoundException
+import com.ajouin.noticecontentscraper.entity.TempNotice
+import com.ajouin.noticecontentscraper.logger
 import com.ajouin.noticecontentscraper.pipeline.exception.ScraperNotFoundException
+import com.ajouin.noticecontentscraper.pipeline.processor.event.OcrRequestCreatedEvent
+import com.ajouin.noticecontentscraper.pipeline.processor.event.SummaryRequestCreatedEvent
+import com.ajouin.noticecontentscraper.pipeline.processor.image.DownloadedFile
 import com.ajouin.noticecontentscraper.pipeline.processor.image.ImageDownloader
 import com.ajouin.noticecontentscraper.pipeline.processor.image.S3ImageUploader
+import com.ajouin.noticecontentscraper.pipeline.processor.publisher.OcrRequestEventPublisher
+import com.ajouin.noticecontentscraper.pipeline.processor.publisher.SummaryRequestEventPublisher
+import com.ajouin.noticecontentscraper.repository.TempNoticeRepository
 import com.ajouin.noticecontentscraper.scraper.NoticeScraper
 import com.ajouin.noticecontentscraper.scraper.ScraperFactory
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.awspring.cloud.sqs.operations.SqsTemplate
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Component
+import java.util.*
 
 @Component
 class NoticeDataProcessorImpl(
@@ -20,42 +28,61 @@ class NoticeDataProcessorImpl(
     private val scraperFactory: ScraperFactory,
     private val imageDownloader: ImageDownloader,
     private val s3ImageUploader: S3ImageUploader,
-    private val sqsTemplate: SqsTemplate,
-    private val eventQueuesProperties: EventQueuesProperties,
+    private val ocrRequestEventPublisher: OcrRequestEventPublisher,
+    private val summaryRequestEventPublisher: SummaryRequestEventPublisher,
+    private val tempNoticeRepository: TempNoticeRepository,
 ) : NoticeDataProcessor {
 
-    override suspend fun processContentRequest(message: String) {
+    override fun processContentRequest(message: String) {
+        val request = objectMapper.readValue(message, ContentRequest::class.java)
+        val result: ParsingResponse = parseRawNoticeData(request)
+        val id = UUID.randomUUID()
 
-        val result: ParsingResponse = parseRawNoticeData(message)
+        if (result.images.isEmpty()) {
+            summaryRequestEventPublisher.publish(
+                SummaryRequestCreatedEvent(
+                    id = id,
+                    content = result.content,
+                )
+            )
 
-        if(result.images.isEmpty()) {
-            sqsTemplate.send { to ->
-                to.queue(eventQueuesProperties.summaryRequestQueue)
-                    .payload("asdf")
-            }
+        } else {
+            val images: List<DownloadedFile> = imageDownloader.download(result.images)
+            val imageKeys: List<String> = s3ImageUploader.upload(images)
+            result.html = updateHtmlWithImageLinks(result.html, imageKeys)
+
+            // 큐 지연시간 10초
+            ocrRequestEventPublisher.publish(
+                OcrRequestCreatedEvent(
+                    id = id,
+                    imageUrl = imageKeys
+                )
+            )
         }
 
-        val images: List<ByteArray?> = imageDownloader.download(result.images)
-        val imageKeys: List<String> = s3ImageUploader.upload(images)
 
-        result.html = updateHtmlWithImageLinks(result.html, imageKeys)
+        val tempNotice = TempNotice(
+            id = id,
+            isTopFixed = request.isTopFixed,
+            fetchId = request.fetchId,
+            title = request.title,
+            content = result.content,
+            html = result.html,
+            originalUrl = request.link,
+            noticeType = request.noticeType,
+        )
 
-        // 이미지가 없는 경우, summary-request 큐에 삽입(contents 내용, 게시글 fetch id)
-
-        // 이미지가 있는 경우, ocr-request 큐에 삽입(이미지 링크 배열, 게시글 fetch id)
-
-
+        tempNoticeRepository.save(tempNotice)
 
     }
 
-    private fun parseRawNoticeData(data: String): ParsingResponse {
+    private fun parseRawNoticeData(request: ContentRequest): ParsingResponse {
 
-        val contentRequest = objectMapper.readValue(data, ContentRequest::class.java)
-        val content = updateNoticeType(contentRequest)
+        val content = updateNoticeType(request)
         val scraper = scraperFactory.getScraper(content.noticeType)
             ?: throw ScraperNotFoundException(content.noticeType.toString())
 
-        return scrapeData(scraper, contentRequest)
+        return scrapeData(scraper, request)
     }
 
     private fun updateNoticeType(contentRequest: ContentRequest): ContentRequest {
@@ -69,8 +96,8 @@ class NoticeDataProcessorImpl(
     private fun scrapeData(scraper: NoticeScraper, contentRequest: ContentRequest): ParsingResponse =
         scraper.fetch(contentRequest).let { doc -> scraper.parse(doc) }
 
+    // HTML 내의 모든 <img> 태그를 찾아 src 속성을 새 이미지 링크로 교체
     private fun updateHtmlWithImageLinks(html: String, newImageLinks: List<String>): String {
-        // HTML 내의 모든 <img> 태그를 찾아 src 속성을 새 이미지 링크로 교체
         var updatedHtml = html
         val pattern = "<img\\s+(?:[^>]*?\\s+)?src=[\"']([^\"']+)[\"']".toRegex()
         val matches = pattern.findAll(html).toList()
