@@ -18,24 +18,37 @@ class S3ImageUploader(
     private val s3Client: S3Client,
 ) {
 
-    fun upload(images: List<ByteArray?>): List<String> {
+    fun upload(images: List<DownloadedFile>): List<String> {
         val imageKeys = mutableListOf<String>()
 
         images.forEach { image ->
-            image?.let {
-                val requestBody = RequestBody.fromBytes(image)
+            image.let {
+                val requestBody = RequestBody.fromBytes(image.bytes)
+                val extension = getContentType(image.extension)
 
                 val fileKey = UUID.randomUUID().toString()
                 val putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucket)
+                    .contentType(extension)
                     .key(fileKey)
                     .build()
 
-                imageKeys.add(fileKey)
+                imageKeys.add("https://$bucket.s3.$region.amazonaws.com/$fileKey")
                 s3Client.putObject(putObjectRequest, requestBody)
             }
         }
 
         return imageKeys
+    }
+
+    private fun getContentType(extension: String) = when (extension.lowercase(Locale.getDefault())) {
+        "jpg", "jpeg" -> "image/jpeg"
+        "png" -> "image/png"
+        "gif" -> "image/gif"
+        "bmp" -> "image/bmp"
+        "tiff", "tif" -> "image/tiff"
+        "webp" -> "image/webp"
+        "svg" -> "image/svg+xml"
+        else -> "application/octet-stream"
     }
 }
