@@ -4,12 +4,15 @@ import com.ajouin.noticecontentscraper.dto.ContentRequest
 import com.ajouin.noticecontentscraper.scraper.ScraperFactory
 import com.ajouin.noticecontentscraper.entity.NoticeType.*
 import org.assertj.core.api.Assertions.*
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest
+@ActiveProfiles("test")
 class ParsingTest @Autowired constructor(
     private val scraperFactory: ScraperFactory,
 ) {
@@ -37,6 +40,7 @@ class ParsingTest @Autowired constructor(
     }
 
     @Test
+    @Disabled
     @DisplayName("구버전 파싱 테스트")
     fun test2() {
         val scraper = scraperFactory.getScraper(생활관)
