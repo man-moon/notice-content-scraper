@@ -15,8 +15,16 @@ class SchoolNoticeEventListener (
     private val noticeDataProcessor: NoticeDataProcessor,
     private val globalExceptionHandler: GlobalExceptionHandler,
 ) {
+//    @SqsListener("\${events.queues.content-request-queue}")
+//    suspend fun receiveContentRequest(message: String) {
+//        try {
+//            noticeDataProcessor.processContentRequest(message)
+//        } catch (e: Exception) {
+//            globalExceptionHandler.handleException(e)
+//        }
+//    }
     @SqsListener("\${events.queues.content-request-queue}")
-    suspend fun receiveContentRequest(message: String) {
+    fun receiveContentRequest(message: String) {
         try {
             noticeDataProcessor.processContentRequest(message)
         } catch (e: Exception) {

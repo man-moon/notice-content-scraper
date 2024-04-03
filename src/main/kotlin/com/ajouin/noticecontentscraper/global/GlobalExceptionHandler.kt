@@ -2,10 +2,10 @@ package com.ajouin.noticecontentscraper.global
 
 import com.ajouin.noticecontentscraper.entity.DownloadTask
 import com.ajouin.noticecontentscraper.global.exception.BusinessException
+import com.ajouin.noticecontentscraper.global.exception.EntityNotFoundException
 import com.ajouin.noticecontentscraper.pipeline.exception.ImageDownloadException
 import com.ajouin.noticecontentscraper.logger
 import com.ajouin.noticecontentscraper.pipeline.exception.ScraperNotFoundException
-import com.ajouin.noticecontentscraper.repository.DownloadTaskRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.HttpRequestMethodNotSupportedException
@@ -15,7 +15,6 @@ import java.net.BindException
 
 @Service
 class GlobalExceptionHandler(
-    private val downloadTaskRepository: DownloadTaskRepository,
 ) {
 
     @Transactional
@@ -25,6 +24,10 @@ class GlobalExceptionHandler(
 
     fun handleException(e: ScraperNotFoundException) {
         logger.error { "${e.scraper} 이름의 스크래퍼를 찾을 수 없습니다" }
+    }
+
+    fun handleException(e: EntityNotFoundException) {
+        logger.error {  }
     }
 
     fun handleException(e: BusinessException) {
