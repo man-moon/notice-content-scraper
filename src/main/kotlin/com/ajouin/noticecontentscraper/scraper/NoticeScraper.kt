@@ -24,10 +24,10 @@ interface NoticeScraper {
     }
 
     private fun getImageLinks(images: Elements): List<String> {
-        val links: List<String> = mutableListOf()
+        val links = mutableListOf<String>()
         for(image in images) {
             image.absUrl("src").let {
-                links.addFirst(it)
+                links.add(it)
             }
         }
         return links
