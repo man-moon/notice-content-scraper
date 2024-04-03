@@ -38,7 +38,6 @@ dependencies {
 	//spring cloud
 	implementation("org.springframework.cloud:spring-cloud-starter-bus-amqp")
 	implementation("org.springframework.cloud:spring-cloud-starter-config")
-	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
 
 	//monitoring
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
