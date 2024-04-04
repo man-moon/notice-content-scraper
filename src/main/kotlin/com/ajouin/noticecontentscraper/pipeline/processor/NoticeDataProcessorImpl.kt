@@ -35,6 +35,7 @@ class NoticeDataProcessorImpl(
 
     override fun processContentRequest(message: String) {
         val request = objectMapper.readValue(message, ContentRequest::class.java)
+        logger.info { "Received message: ${request.id}" }
         val result: ParsingResponse = parseRawNoticeData(request)
         val id = UUID.randomUUID()
 

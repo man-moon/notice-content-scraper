@@ -21,8 +21,8 @@ class SummaryResponseEventListener(
     @SqsListener("\${events.queues.summary-response-queue}")
     fun receiveContentResponse(message: String) {
 
-        logger.info { "Received message: $message" }
         val response: SummaryResponse = objectMapper.readValue(message, SummaryResponse::class.java)
+        logger.info { "Received message: ${response.id}" }
 
         val tempNotice: TempNotice = tempNoticeRepository.findByIdOrNull(response.id)
             ?: throw NoticeNotFoundException()

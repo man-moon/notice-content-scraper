@@ -18,8 +18,8 @@ class NoticeUpdateRequestEventListener(
     @SqsListener("\${events.queues.notice-update-request-queue}")
     @Transactional
     fun receiveNoticeRequest(message: String) {
-        logger.info { "Received message: $message" }
         val response = objectMapper.readValue(message, SchoolNoticeUpdateEvent::class.java)
+        logger.info { "Received message: fetchId=${response.fetchId}, noticeType=${response.noticeType}" }
 
         val updateNotice = noticeRepository.findByFetchIdAndNoticeType(response.fetchId, response.noticeType)
             ?: run {

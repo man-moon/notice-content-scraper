@@ -21,8 +21,8 @@ class OcrResponseEventListener(
 ) {
     @SqsListener("\${events.queues.ocr-response-queue}")
     fun receiveContentResponse(message: String) {
-        logger.info { "Received message: $message" }
         val response: OcrResponse = objectMapper.readValue(message, OcrResponse::class.java)
+        logger.info { "Received message: ${response.id}" }
 
         val tempNotice: TempNotice = tempNoticeRepository.findByIdOrNull(response.id)
             ?: throw NoticeNotFoundException()
