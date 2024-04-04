@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Component
@@ -33,6 +34,7 @@ class NoticeDataProcessorImpl(
     private val tempNoticeRepository: TempNoticeRepository,
 ) : NoticeDataProcessor {
 
+    @Transactional
     override fun processContentRequest(message: String) {
         val request = objectMapper.readValue(message, ContentRequest::class.java)
         logger.info { "Received message: ${request.id}" }
