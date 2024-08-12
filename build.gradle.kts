@@ -54,7 +54,7 @@ dependencies {
 
 	//database
 	runtimeOnly("com.h2database:h2")
-	runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
+	runtimeOnly("com.mysql:mysql-connector-j")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 
 	//logging
