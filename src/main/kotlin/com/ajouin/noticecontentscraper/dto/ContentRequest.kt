@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import java.util.Date
 
 data class ContentRequest @JsonCreator constructor (
     @JsonProperty("title") val title: String,
@@ -14,6 +15,7 @@ data class ContentRequest @JsonCreator constructor (
     @JsonProperty("views") val views: Long,
     @JsonProperty("noticeType") @Enumerated(EnumType.STRING)
     var noticeType: NoticeType,
+    @JsonProperty("date") val date: Date,
     @JsonProperty("fetchId") val fetchId: Long,
     @JsonProperty("id") val id: Long?,
 )

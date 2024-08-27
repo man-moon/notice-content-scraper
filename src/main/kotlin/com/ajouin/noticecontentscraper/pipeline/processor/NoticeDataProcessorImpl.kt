@@ -72,6 +72,7 @@ class NoticeDataProcessorImpl(
             content = result.content,
             html = result.html,
             originalUrl = request.link,
+            date = request.date,
             noticeType = request.noticeType,
         )
 

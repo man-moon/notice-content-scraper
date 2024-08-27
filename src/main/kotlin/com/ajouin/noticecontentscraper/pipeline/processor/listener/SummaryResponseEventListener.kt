@@ -36,6 +36,7 @@ class SummaryResponseEventListener(
                 summary = response.content,
                 content = tempNotice.content,
                 originalUrl = tempNotice.originalUrl,
+                date = tempNotice.date,
                 noticeType = tempNotice.noticeType,
             )
         )

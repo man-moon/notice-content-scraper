@@ -4,7 +4,7 @@ import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.springframework.data.annotation.CreatedDate
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 @Entity
 class TempNotice(
@@ -21,6 +21,7 @@ class TempNotice(
     val html: String,
     @CreationTimestamp
     val createdAt: LocalDateTime? = null,
+    val date: Date,
     val originalUrl: String,
 
     @Enumerated(EnumType.STRING)
