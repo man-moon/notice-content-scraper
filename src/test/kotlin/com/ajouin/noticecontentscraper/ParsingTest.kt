@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
+import java.util.Date
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -29,6 +30,7 @@ class ParsingTest @Autowired constructor(
             noticeType = 일반공지,
             fetchId = 1L,
             id = 1L,
+            date = Date(),
             views = 0L,
         )
         val content = scraper.fetch(contentRequest).let {
@@ -52,6 +54,7 @@ class ParsingTest @Autowired constructor(
             noticeType = 생활관,
             fetchId = 1L,
             id = 1L,
+            date = Date(),
             views = 0L,
         )
         val content = scraper.fetch(contentRequest).let {
@@ -73,6 +76,7 @@ class ParsingTest @Autowired constructor(
             noticeType = 간호대학,
             fetchId = 1L,
             id = 1L,
+            date = Date(),
             views = 0L,
         )
         val content = scraper.fetch(contentRequest).let {
@@ -96,6 +100,7 @@ class ParsingTest @Autowired constructor(
             noticeType = 소프트웨어학과,
             fetchId = 1L,
             id = 1L,
+            date = Date(),
             views = 0L,
         )
         val content = scraper.fetch(contentRequest).let {
