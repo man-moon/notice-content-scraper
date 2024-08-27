@@ -20,6 +20,9 @@ class Notice(
     @CreationTimestamp val createdAt: LocalDateTime? = null,
     val originalUrl: String,
     @Enumerated(EnumType.STRING) val noticeType: NoticeType,
+    @Lob
+    @Column(columnDefinition = "MEDIUMTEXT")
+    val content: String,
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 )

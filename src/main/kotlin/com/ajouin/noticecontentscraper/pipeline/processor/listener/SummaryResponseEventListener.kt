@@ -34,6 +34,7 @@ class SummaryResponseEventListener(
                 title = tempNotice.title,
                 html = tempNotice.html,
                 summary = response.content,
+                content = tempNotice.content,
                 originalUrl = tempNotice.originalUrl,
                 noticeType = tempNotice.noticeType,
             )

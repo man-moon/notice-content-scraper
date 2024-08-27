@@ -26,7 +26,10 @@ class OcrResponseEventListener(
 
         val tempNotice: TempNotice = tempNoticeRepository.findByIdOrNull(response.id)
             ?: throw NoticeNotFoundException()
-        tempNotice.content += "첨부된 이미지 내용: " + response.content.map { it }
+
+        // 본문에 이미지 내용 추가
+        tempNotice.content += response.content.map { it }
+        tempNoticeRepository.save(tempNotice)
 
         summaryRequestEventPublisher.publish(
             SummaryRequestCreatedEvent(
