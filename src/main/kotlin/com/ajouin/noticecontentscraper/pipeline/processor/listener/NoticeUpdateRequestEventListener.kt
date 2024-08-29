@@ -1,5 +1,6 @@
 package com.ajouin.noticecontentscraper.pipeline.processor.listener
 
+import com.ajouin.noticecontentscraper.entity.NoticeType
 import com.ajouin.noticecontentscraper.logger
 import com.ajouin.noticecontentscraper.pipeline.exception.NoticeNotFoundException
 import com.ajouin.noticecontentscraper.pipeline.processor.event.SchoolNoticeUpdateEvent
@@ -20,6 +21,10 @@ class NoticeUpdateRequestEventListener(
     fun receiveNoticeRequest(message: String) {
         val response = objectMapper.readValue(message, SchoolNoticeUpdateEvent::class.java)
         logger.info { "Received message: fetchId=${response.fetchId}, noticeType=${response.noticeType}" }
+
+        // 학과 이름에서 숫자 제거
+        val noticeTypeString = response.noticeType.toString().replace(Regex("[0-9]"), "")
+        response.noticeType = NoticeType.valueOf(noticeTypeString)
 
         val updateNotice = noticeRepository.findByFetchIdAndNoticeType(response.fetchId, response.noticeType)
             ?: run {
